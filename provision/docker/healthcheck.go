@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+    "crypto/tls"
 	"regexp"
 	"strings"
 	"time"
@@ -22,6 +23,7 @@ func clientWithTimeout(timeout time.Duration) *http.Client {
 		return net.DialTimeout(network, addr, timeout)
 	}
 	transport := http.Transport{
+        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		Dial: dialTimeout,
 	}
 	return &http.Client{
@@ -67,7 +69,7 @@ func runHealthcheck(cont *container, w io.Writer) error {
 	maxWaitTime = maxWaitTime * int(time.Second)
 	sleepTime := 3 * time.Second
 	startedTime := time.Now()
-	url := fmt.Sprintf("http://%s:%s/%s", cont.HostAddr, cont.HostPort, path)
+	url := fmt.Sprintf("https://%s:%s/%s", cont.HostAddr, cont.HostPort, path)
 	for {
 		var lastError error = nil
 		req, err := http.NewRequest(method, url, nil)
